@@ -1,5 +1,5 @@
 # MyOS
-- This repo is for my own os
+This repo is for my own os
 
 ## Tools used
 - C
