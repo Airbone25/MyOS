@@ -1,7 +1,6 @@
-boot.o
-kernel.o
-kernel.bin
-myos.iso
-.log
-.tmp
-.DS_store
+*.bin
+*.iso
+*.o
+*.log
+*.tmp
+*.DS_store
