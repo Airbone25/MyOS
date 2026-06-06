@@ -96,6 +96,14 @@ void scroll(){
   row = 24;
 }
 
+void clear_screen(){
+  for (int row = 0; row < 25; row++){
+    clearRow(row);
+  }
+  row = 0;
+  col = 0;
+}
+
 void putchar(char c){
   if (c == '\n'){
     col = 0;
@@ -132,6 +140,16 @@ void timer_handler(){
 void exec_cmd(const char *cmd){
   if (strcmp(cmd, "version") == 0){
     print("MyOS 0.1\n");
+  }else if(strcmp(cmd, "help") == 0){
+    print("Available commands:\n");
+    print("version - Show OS version\n");
+    print("help - Show this help message\n");
+  }else if(strcmp(cmd, "clear") == 0){
+    clear_screen();
+  }else if(strcmp(cmd, "reboot") == 0){
+    outb(0x64, 0xFE);
+  }else if(strcmp(cmd, "") == 0){
+    print("");
   }
   else{
     print("Unknown command: ");

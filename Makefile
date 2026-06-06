@@ -2,35 +2,36 @@ ASM=nasm
 CC=gcc
 LD=ld
 
-CFLAGS=-m32 -ffreestanding -c
+CFLAGS=-m32 -ffreestanding -c -Iinclude
 LDFLAGS=-m elf_i386 -T linker.ld
+
+MODULES=boot kernel cpu drivers
+OBJ_DIR=obj
+
+# Find all C and ASM files
+C_SOURCES=$(shell find $(MODULES) -name '*.c')
+ASM_SOURCES=$(shell find $(MODULES) -name '*.asm')
+
+# Convert source file names to object file names
+C_OBJECTS=$(patsubst %.c, $(OBJ_DIR)/%.o, $(C_SOURCES))
+ASM_OBJECTS=$(patsubst %.asm, $(OBJ_DIR)/%.o, $(ASM_SOURCES))
+OBJECTS=$(C_OBJECTS) $(ASM_OBJECTS)
+
+# The bootloader usually needs to be linked first, or the linker script handles it.
+# We will just pass $(OBJECTS) to ld, but we'll ensure the linker.ld takes care of ENTRY.
 
 all: myos.iso
 
-boot.o: boot.asm
-	$(ASM) -f elf32 boot.asm -o boot.o
+$(OBJ_DIR)/%.o: %.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $< -o $@
 
-kernel.o: kernel.c
-	$(CC) $(CFLAGS) kernel.c -o kernel.o
+$(OBJ_DIR)/%.o: %.asm
+	@mkdir -p $(@D)
+	$(ASM) -f elf32 $< -o $@
 
-idt.o: idt.c
-	$(CC) $(CFLAGS) idt.c -o idt.o
-
-pic.o: pic.c
-	$(CC) $(CFLAGS) pic.c -o pic.o
-
-idt_load.o: idt_load.asm
-	$(ASM) -f elf32 idt_load.asm -o idt_load.o
-
-io.o: io.c
-	$(CC) $(CFLAGS) io.c -o io.o
-
-irq.o: irq.asm
-	$(ASM) -f elf32 irq.asm -o irq.o
-
-kernel.bin: boot.o kernel.o idt.o pic.o idt_load.o irq.o io.o
-	$(LD) $(LDFLAGS) boot.o kernel.o idt.o pic.o idt_load.o irq.o io.o -o kernel.bin
-
+kernel.bin: $(OBJECTS)
+	$(LD) $(LDFLAGS) $(OBJECTS) -o kernel.bin
 
 myos.iso: kernel.bin
 	mkdir -p iso/boot
@@ -41,4 +42,4 @@ run: myos.iso
 	qemu-system-i386 -cdrom myos.iso
 
 clean:
-	rm -f *.o kernel.bin myos.iso
+	rm -rf $(OBJ_DIR) kernel.bin myos.iso
