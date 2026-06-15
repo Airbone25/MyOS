@@ -1,9 +1,14 @@
 section .multiboot
 align 4
 
+MBALIGN equ 1 << 0
+MEMINFO equ 1 << 1
+
+FLAGS equ MBALIGN | MEMINFO
+
 dd 0x1BADB002
-dd 0
-dd -(0x1BADB002)
+dd FLAGS
+dd -(0x1BADB002 + FLAGS)
 
 section .bss
 align 16
@@ -42,6 +47,8 @@ _start:
     mov ss, ax
 
     mov esp, stack_top
+    push ebx
+    push eax
     call kernel_main
 
 .hang:

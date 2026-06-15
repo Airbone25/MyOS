@@ -31,7 +31,7 @@ $(OBJ_DIR)/%.o: %.asm
 	$(ASM) -f elf32 $< -o $@
 
 kernel.bin: $(OBJECTS)
-	$(LD) $(LDFLAGS) $(OBJECTS) -o kernel.bin
+	$(CC) -m32 -T linker.ld -o kernel.bin -ffreestanding -nostdlib $(OBJECTS)
 
 myos.iso: kernel.bin
 	mkdir -p iso/boot
